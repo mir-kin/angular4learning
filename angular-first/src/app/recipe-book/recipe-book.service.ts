@@ -3,37 +3,37 @@ import {Injectable} from "@angular/core";
 import {Ingredient} from "../shared/ingredient.model";
 import {ShoppingService} from "../shopping-list/shopping-list.service";
 import {Subject} from "rxjs/Subject";
+import {ServerService} from "../shared/server.service";
+import {Response} from "@angular/http";
 
 @Injectable()
 
 export class RecipeService {
 	recipesChanged = new Subject<Recipe[]>();
-    public recipes: Recipe[] = [
-		new Recipe('Test Recipe',
-			'Test Description of Recipe',
-			'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTL7E54gwax5mhsoJ7O--dc2oJ9v-mfDKvfFA3gHgicxmHKKaiVkQ',
-			[
-				new Ingredient('apples', 5),
-				new Ingredient('berry', 1)
-			]
-		),
-		new Recipe('Test Recipe 2',
-			'Test Descrition of Recipe 2',
-			'https://upload.wikimedia.org/wikipedia/commons/2/2e/Fast_food_meal.jpg',
-			[
-				new Ingredient('fries', 5),
-				new Ingredient('meat', 1)
-			]
-		)
-	];
+    public recipes: Recipe[] = [];
 
-    constructor(private shoppingService: ShoppingService) {
-
+    constructor(private shoppingService: ShoppingService, private serverService: ServerService) {
+		this.setRecipes();
 	}
 
-	setRecipes(newRecipes: Recipe[]) {
-    	this.recipes = newRecipes;
-    	this.updateRecipesArray();
+	sendRecipes() {
+    	this.serverService.storeRecipes(this.recipes);
+	}
+
+	setRecipes() {
+		this.serverService.getServerRecipes().subscribe(
+			(response: Response) => {
+				const serverRecipes: Recipe[] = response.json();
+				for (let recipe of serverRecipes) {
+					if (!recipe['ingredients']) {
+						recipe['ingredients'] = [];
+					}
+				}
+
+				this.recipes = serverRecipes;
+				this.updateRecipesArray();
+			}
+		);
 	}
 
 	updateRecipesArray() {

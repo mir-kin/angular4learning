@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {ServerService} from "../shared/server.service";
 import { Response } from '@angular/http'
+import {ShoppingService} from "../shopping-list/shopping-list.service";
+import {RecipeService} from "../recipe-book/recipe-book.service";
 
 @Component({
   selector: 'app-header',
@@ -9,23 +10,19 @@ import { Response } from '@angular/http'
 })
 export class HeaderComponent implements OnInit {
 
-  constructor(private serverService: ServerService) { }
+  constructor(private recipeService: RecipeService, private shoppingService: ShoppingService) { }
 
   ngOnInit() {
   }
 
   onSaveData() {
-    this.serverService.storeRecipes().subscribe(
-        (response: Response) => console.log(response)
-    );
-    this.serverService.storeShoppingList().subscribe(
-        (response: Response) => console.log(response)
-    );
+    this.recipeService.sendRecipes();
+    this.shoppingService.sendIngredients();
   }
 
   onGetData() {
-    this.serverService.getStoredRecipes();
-    this.serverService.getShoppingList();
+    this.recipeService.setRecipes();
+    this.shoppingService.setIngredients();
   }
 
 }
